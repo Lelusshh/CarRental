@@ -1,11 +1,11 @@
-from app.views.car_rental UserModel, CarModel, RentalModel
+from app.views.car_rent import UserModel, CarModel, RentalModel
 from fastapi import APIRouter, HTTPException
-from app.models import car_rental as models
+from app.models import car_rent as model
 
 router = APIRouter(prefix="/car_rental")
 
 
-@router.post("", )
+@router.post("")
 def create_user(user: UserModel):
     if model.get_by_name(user.name, user.last_name):
         raise HTTPException(status_code=409, detail="User already registered")
@@ -26,7 +26,7 @@ def update_user(user: UserModel):
 
 @router.post("")
 def create_car_ad(car: CarModel):
-    return model.create_car_ad
+    return model.create_car_ad(car)
 
 @router.delete("/car_id")
 def delete_car(car: CarModel):
@@ -49,8 +49,8 @@ def create_rental(rental: RentalModel):
 def delete_rental(rental: RentalModel):
     return model.delete_rental(rental_id)
 
-@router.put("/rental_id")
-def update_rental(rental: RentalBody):
+@router.patch("/rental_id")
+def update_rental(rental: RentalModel):
     if not model.get_rental(rental_id):
         raise HTTPException(status_code=404, detail="Rental not found")
     return model.update_rental(rental_id, rental)
