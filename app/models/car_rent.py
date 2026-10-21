@@ -4,7 +4,7 @@ from sqlalchemy import (
 )
 
 db_path = Path(__file__).resolve().parents[2] / "car_rent.db"
-engine = create_engine(f"sqllite:///{db_path}")
+engine = create_engine(f"sqlite:///{db_path}")
 metadata = MetaData()
 
 users = Table(
@@ -12,9 +12,9 @@ users = Table(
     metadata,
     Column("id", Integer, primary_key = True),
     Column("name", String, nullable = False),
-    Column("last_name", String, nullable = False)
+    Column("last_name", String, nullable = False),
     Column("role", String, nullable = False),
-    Column("type", String, nullable = False)
+    Column("type", String, nullable = False),
 )
 
 cars = Table(
@@ -23,8 +23,8 @@ cars = Table(
     Column("id", Integer, primary_key = True),
     Column("category", String, nullable = False),
     Column("brand", String, nullable = False),
-    Column("price", String, nullable = False)
-    Column("owner", Integer, ForeignKey("users.id"), nullable = False)
+    Column("price", String, nullable = False),
+    Column("owner", Integer, ForeignKey("users.id"), nullable = False),
 )
 
 rentals = Table(
@@ -33,7 +33,7 @@ rentals = Table(
     Column("id", Integer, primary_key = True),
     Column("car_id", Integer, ForeignKey("cars.id"), nullable = False),
     Column("user_id", Integer, ForeignKey("users.id"), nullable = False),
-    Column("total_day", Integer, nullable = False)
+    Column("total_day", Integer, nullable = False),
 )
 
 def init_db():
@@ -46,7 +46,7 @@ def init_db():
 
 def create_user(user: UserModel):
     query = users.insert().values(**user.model_dump())
-    with engine.begin() as connection:
+    with engine.begin as connection:
         result = conection.execute(query)
         return {"id": result.inserted_primary_key[0], **user.model_dump()}
 
