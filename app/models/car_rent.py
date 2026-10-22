@@ -72,7 +72,7 @@ def get_all_users():
     query = users.select()
     with engine.connect() as connection:
         result = connection.execute(query).mappings().all()
-        return dict(result)
+        return [dict(row) for row in result]
 
 def update_user(user_id: int, user: UserModel):
     query = users.update().where(users.c.id == user_id).values(**user.model_dump())
@@ -98,7 +98,7 @@ def delete_car(car_id: int):
 def get_car(car_id: int):
     query = cars.select().where(cars.c.id == car_id)
     with engine.connect() as connection:
-        result = connection.execute(query).mappings().first().all()
+        result = connection.execute(query).mappings().first()
         return dict(result) if result else None
 
 def get_all_car():
@@ -120,7 +120,7 @@ def create_rental(rental: RentalModel):
     query = rentals.insert().values(**rental.model_dump())
     with engine.begin() as connection:
         result = connection.execute(query)
-        return {"id": result.inserted_primary_key[0], **rental.model*dump()}
+        return {"id": result.inserted_primary_key[0], **rental.model_dump()}
 
 def delete_rental(rental_id: int):
     query = rentals.delete().where(rentals.c.id == rental_id)
