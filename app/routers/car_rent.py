@@ -29,6 +29,10 @@ def get_user_by_name(user: UserModel):
         raise HTTPException(status_code=404, detail="User not found")
     return model.get_by_name(name, last_name)
 
+@router.get("/users")
+def get_all_users():
+    return model.get_all_users()
+
 
 @router.post("/cars")
 def create_car_ad(car: CarModel):
@@ -46,6 +50,16 @@ def update_car(car_id, car: CarModel):
         raise HTTPException(status_code=404, detail="Car ad not found")
     return model.update_car(car_id, car)
 
+@router.get("/cars/{car_id}")
+def get_car(car_id):
+    if not model.get_car(car_id):
+        raise HTTPException(status_code=404, detail="Car ad not found")
+    return model.get_car(car_id)
+
+@router.get("/cars")
+def get_all_car():
+    return model.get_all_car()
+
 
 @router.post("/rentals")
 def create_rental(rental: RentalModel):
@@ -60,4 +74,15 @@ def update_rental(rental_id, rental: RentalModel):
     if not model.get_rental(rental_id):
         raise HTTPException(status_code=404, detail="Rental not found")
     return model.update_rental(rental_id, rental)
+
+@router.get("/rentals/{rental_id}")
+def get_rental(rental_id):
+    if not model.get_rental(rental_id):
+        raise HTTPException(status_code=404, detail="Rental not found")
+    return model.get_rental(rental_id)
+
+@router.get("/rentals")
+def get_all_rentals():
+    return model.get_all_rentals()
+
 
