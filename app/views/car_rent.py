@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 class UserModel(BaseModel):
     id: int
+    password: str
     name: str
     last_name: str
     role: str
@@ -12,6 +13,7 @@ class CarModel(BaseModel):
     category: str
     brand: str
     price: str
+    owner: int
 
 class RentalModel(BaseModel):
     id: int
@@ -19,3 +21,6 @@ class RentalModel(BaseModel):
     user_id: int
     total_day: int
 
+class UserLogin(BaseModel):
+    name: str
+    password: str

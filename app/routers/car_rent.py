@@ -1,9 +1,17 @@
-from app.views.car_rent import UserModel, CarModel, RentalModel
+from app.views.car_rent import UserModel, CarModel, RentalModel, UserLogin
 from fastapi import APIRouter, HTTPException
 from app.models import car_rent as model
 
 router = APIRouter(prefix="/car_rental")
 
+
+@router.post("/login")
+def login(user: UserLogin):
+    user = model.login(user)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid password or username")
+    token = model.create_token(user["id"], user["name"], user["role"])
+    return {"access_token": token, "token_type": "bearer"}
 
 @router.post("/users")
 def create_user(user: UserModel):
@@ -12,8 +20,8 @@ def create_user(user: UserModel):
     return model.create_user(user)
 
 @router.delete("/users/{user_id}")
-def delete_user(user: UserModel):
-    if not model.get_by_name(user.name, user.last_name):
+def delete_user(user_id):
+    if not 
         raise HTTPException(status_code=404, detail="User not found")
     return model.delete_user(user_id)
 
@@ -24,7 +32,7 @@ def update_user(user_id, user: UserModel):
     return model.update_user(user_id, user)
 
 @router.get("/users/{user_id}")
-def get_user_by_name(user: UserModel):
+def get_user_by_name(name: str, last_name: str):
     if not model.get_by_name(name, last_name):
         raise HTTPException(status_code=404, detail="User not found")
     return model.get_by_name(name, last_name)

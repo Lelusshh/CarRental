@@ -1,4 +1,7 @@
-from app.views.car_rent import UserModel, CarModel, RentalModel
+from datetime import datetime, timedelta, timezone
+import jwt
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from app.views.car_rent import UserModel, CarModel, RentalModel, UserLogin
 from pathlib import Path
 from sqlalchemy import (
     JSON, Column, Integer, String, MetaData, Table, create_engine, inspect, select, ForeignKey
@@ -12,6 +15,7 @@ users = Table(
     "users",
     metadata,
     Column("id", Integer, primary_key = True),
+    Column("password", String, nullable = False),
     Column("name", String, nullable = False),
     Column("last_name", String, nullable = False),
     Column("role", String, nullable = False),
@@ -42,6 +46,24 @@ def init_db():
         metadata.create_all(connection)
 
 
+SECRET_KEY = "learn-jwt-secret-32-bytes-long!!"
+ALGORITHM = "HS256"
+bearer = HTTPBearer()
+
+def create_token(user_id: int, name: str, role: str)-> str:
+    payload = {
+        "sub": str(user_id),
+        "name": name,
+        "role": role,
+        "exp": datetime.now(timezone.utc) + timedelta(hours=1)
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+def login(user: UserLogin):
+    query = users.select().where(users.c.name == user.name, users.c.password == user.password)
+    with engine.connect() as connection:
+        result = connection.execute(query).mappings().first()
+        return dict(result) if result else None
 
 #ALL AROUND USER:
 
@@ -93,7 +115,7 @@ def delete_car(car_id: int):
     query = cars.delete().where(cars.c.id == car_id)
     with engine.begin() as connection:
         result = connection.execute(query)
-        return {"messag": f"Ad of car {user_id} deleted successfully"}
+        return {"message": f"Ad of car {car_id} deleted successfully"}
 
 def get_car(car_id: int):
     query = cars.select().where(cars.c.id == car_id)
