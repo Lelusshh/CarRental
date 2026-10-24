@@ -4,6 +4,10 @@ from app.models import car_rent as model
 
 router = APIRouter(prefix="/car_rental")
 
+def find_user(user_id: int):
+    user = model.get_user(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
 
 @router.post("/login")
 def login(user: UserLogin):
@@ -20,9 +24,8 @@ def create_user(user: UserModel):
     return model.create_user(user)
 
 @router.delete("/users/{user_id}")
-def delete_user(user_id):
-    if not 
-        raise HTTPException(status_code=404, detail="User not found")
+def delete_user(user_id: int):
+    find_user(user_id)
     return model.delete_user(user_id)
 
 @router.patch("/users/{user_id}")
