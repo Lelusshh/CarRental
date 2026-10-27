@@ -1,5 +1,5 @@
 from app.views.car_rent import UserModel, CarModel, RentalModel, UserLogin
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.models import car_rent as model
 
 router = APIRouter(prefix="/car_rental")
@@ -8,6 +8,11 @@ def find_user(user_id: int):
     user = model.get_user(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+def check_token(token_data = Depends(model.check_token)):
+    if token_data is None:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    return token_data
 
 @router.post("/login")
 def login(user: UserLogin):
@@ -24,15 +29,24 @@ def create_user(user: UserModel):
     return model.create_user(user)
 
 @router.delete("/users/{user_id}")
-def delete_user(user_id: int):
+def delete_user(user_id: int, token_data = Depends(check_token)):
     find_user(user_id)
+    if int(token_data["user_id"]) != user_id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
     return model.delete_user(user_id)
 
 @router.patch("/users/{user_id}")
-def update_user(user_id, user: UserModel):
+def update_user(user_id: int, user: UserModel, token_data = Depends(check_token)):
     if not model.get_by_name(user.name, user.last_name):
         raise HTTPException(status_code=404, detail="User not found")
+    if int(token_data["user_id"]) != user_id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
     return model.update_user(user_id, user)
+
+@router.get("/users/{user_id}")
+def get_user(user_id: int):
+    find_user(user_id)
+    return model.get_user(user_id)
 
 @router.get("/users/{user_id}")
 def get_user_by_name(name: str, last_name: str):
@@ -50,15 +64,21 @@ def create_car_ad(car: CarModel):
     return model.create_car_ad(car)
 
 @router.delete("/cars/{car_id}")
-def delete_car(car_id):
-    if not model.get_car(car_id):
+def delete_car(car_id, token_data = Depends(check_token)):
+    car_data = model.get_car(car_id)
+    if not car_data:
         raise HTTPException(status_code=404, detail="Car ad not found")
+    if token_data["role"] != "owner" and int(token_data["user_id"]) != car_data["owner"]:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
     return model.delete_car(car_id)
 
 @router.patch("/cars/{car_id}")
-def update_car(car_id, car: CarModel):
-    if not model.get_car(car_id):
+def update_car(car_id, car: CarModel, token_data = Depends(check_token)):
+    car_data = model.get_car(car_id)
+    if not car_data:
         raise HTTPException(status_code=404, detail="Car ad not found")
+    if token_data["role"] != "owner" and int(token_data["user_id"]) != car_data["owner"]:
+        raise HTTPException(status_code=403, detail="Not enough permissions") 
     return model.update_car(car_id, car)
 
 @router.get("/cars/{car_id}")
