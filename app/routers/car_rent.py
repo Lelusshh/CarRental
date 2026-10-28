@@ -48,7 +48,7 @@ def get_user(user_id: int):
     find_user(user_id)
     return model.get_user(user_id)
 
-@router.get("/users/{user_id}")
+@router.get("/users/{name}/{last_name}")
 def get_user_by_name(name: str, last_name: str):
     if not model.get_by_name(name, last_name):
         raise HTTPException(status_code=404, detail="User not found")

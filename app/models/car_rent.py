@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 import jwt
+from fastapi import Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.views.car_rent import UserModel, CarModel, RentalModel, UserLogin
 from pathlib import Path
@@ -19,7 +20,7 @@ users = Table(
     Column("name", String, nullable = False),
     Column("last_name", String, nullable = False),
     Column("role", String, nullable = False),
-    Column("type", String, nullable = False),
+    Column("type", String, nullable = True),
 )
 
 cars = Table(
@@ -58,6 +59,28 @@ def create_token(user_id: int, name: str, role: str)-> str:
         "exp": datetime.now(timezone.utc) + timedelta(hours=1)
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def check_token(credentials: HTTPAuthorizationCredentials = Depends(bearer)):
+    try:
+        payload = jwt.decode(
+            credentials.credentials,
+            SECRET_KEY,
+            algorithms=[ALGORITHM]
+        )
+    except jwt.InvalidTokenError:
+        return None
+
+    user_id = payload.get("sub")
+    role = payload.get("role")
+
+    if not user_id:
+        return None
+
+    return {
+        "role": role, 
+        "user_id": user_id
+    }
 
 def login(user: UserLogin):
     query = users.select().where(users.c.name == user.name, users.c.password == user.password)

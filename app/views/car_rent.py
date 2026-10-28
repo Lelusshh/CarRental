@@ -1,3 +1,4 @@
+from typing import Literal
 from pydantic import BaseModel
 
 class UserModel(BaseModel):
@@ -5,7 +6,7 @@ class UserModel(BaseModel):
     password: str
     name: str
     last_name: str
-    role: str
+    role: Literal["owner","client"]
     type: str
 
 class CarModel(BaseModel):
